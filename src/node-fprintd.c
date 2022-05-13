@@ -36,6 +36,78 @@ static bool str_equal(const char *a, const char *b) {
   return strcmp(a, b) == 0;
 }
 
+static bool at_least_one_enrolled_print(sd_bus *bus, const char *device) {
+  sd_bus_error error = SD_BUS_ERROR_NULL;
+  sd_bus_message *message = NULL;
+  const char *s;
+  int result;
+
+  result = sd_bus_call_method(bus,
+                              "net.reactivated.Fprint",
+                              device,
+                              "net.reactivated.Fprint.Device",
+                              "ListEnrolledFingers",
+                              &error,
+                              &message,
+                              "s",
+                              "");
+  if (result < 0) {
+    fprintf(stderr, "ListEnrolledFingers failed: %s",error.message);
+    return false;
+  }
+
+  result = sd_bus_message_enter_container(message, SD_BUS_TYPE_ARRAY, "s");
+  if (result < 0) {
+    fprintf(stderr, "Failed to parse answer from ListEnrolledFingers(): %d", result);
+    return false;
+  }
+
+  if(sd_bus_message_read_basic(message, SD_BUS_TYPE_STRING, &s) > 0) {
+    return true;
+  }
+  
+  sd_bus_message_exit_container(message);
+
+  return false;
+}
+
+static bool has_enrolled_fingerprints(sd_bus *bus) {
+  sd_bus_error error = SD_BUS_ERROR_NULL;
+  sd_bus_message *message = NULL;
+  const char *device_path = NULL;
+  const char *device;
+  int result;
+
+  if(sd_bus_call_method (bus,
+                         "net.reactivated.Fprint",
+                         "/net/reactivated/Fprint/Manager",
+                         "net.reactivated.Fprint.Manager",
+                         "GetDevices",
+                         &error,
+                         &message,
+                         NULL) < 0) {
+    return false;
+  }
+
+  result = sd_bus_message_enter_container(message, SD_BUS_TYPE_ARRAY, "o");
+  if (result < 0) {
+    fprintf(stderr, "Failed to parse answer from GetDevices: %d", result);
+    return false;
+  }
+
+  while(sd_bus_message_read_basic(message, 'o', &device) > 0) {
+    bool prints_enrolled = at_least_one_enrolled_print(bus, device);
+
+    if(prints_enrolled) {
+      return true;
+    }
+  }
+
+  sd_bus_message_exit_container(message);
+
+  return false;
+}
+
 static char *get_default_device(sd_bus *bus) {
   sd_bus_error error = SD_BUS_ERROR_NULL;
   sd_bus_message *message = NULL;
@@ -121,6 +193,7 @@ static int verify_result_cb(sd_bus_message *bus_message, void *userdata, sd_bus_
   }
 
   // Error with scanning
+  data->verify_state = STATE_ERROR;
 
   return 0;
 }
@@ -243,16 +316,26 @@ static bool verify_fingerprint(sd_bus *bus, verify_data *data) {
 }
 
 bool supports_biometrics() {
+  sd_bus *bus = NULL;
 
+  if(sd_bus_open_system(&bus) < 0) {
+    fprintf(stderr, "Unable to open system bus: %d\n", errno);
+    return false;
+  }
+
+  bool result = has_enrolled_fingerprints(bus);
+
+  sd_bus_close(bus);
+  return result;
 }
 
 bool authenticate_biometric() {
   sd_bus* bus = NULL;
-  char *device = NULL;
   verify_data *data = calloc(1, sizeof(verify_data));
 
   if(!data) {
     fprintf(stderr, "Unable to allocate sufficient memory\n");
+    free(data);
     return false;
   }
 

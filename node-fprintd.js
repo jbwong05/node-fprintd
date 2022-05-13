@@ -1,3 +1,11 @@
-var addon = require("bindings")("node-fprintd");
+var node_fprintd = require("bindings")("node-fprintd");
 
-console.log(addon.authenticateBiometric());
+function supportsBiometrics() {
+  return node_fprintd.supportsBiometrics();
+}
+
+function authenticateBiometric() {
+  return node_fprintd.authenticateBiometric();
+}
+
+export { supportsBiometrics, authenticateBiometric };
