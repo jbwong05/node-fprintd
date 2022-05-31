@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Allows node to authenticate fingerprints with fprintd",
   "main": "node-fprintd.js",
-  "private": true,
   "dependencies": {
     "bindings": "~1.2.1"
   },
