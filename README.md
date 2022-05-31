@@ -12,7 +12,7 @@ Developed with the end goal of adding fingerprint authentication support to the 
 
 ## Installation
 ```
-npm install git+https://github.com/jbwong05/node-fprintd.git
+npm install node-fprintd
 ```
 
 ## Building

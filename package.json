@@ -1,5 +1,5 @@
 {
-  "name": "@jbwong05/node-fprintd",
+  "name": "node-fprintd",
   "version": "0.1.0",
   "description": "Allows node to authenticate fingerprints with fprintd",
   "main": "node-fprintd.js",
