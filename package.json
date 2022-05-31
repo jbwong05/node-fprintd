@@ -1,5 +1,5 @@
 {
-  "name": "node-fprintd",
+  "name": "@jbwong05/node-fprintd",
   "version": "0.1.0",
   "description": "Allows node to authenticate fingerprints with fprintd",
   "main": "node-fprintd.js",
@@ -9,5 +9,23 @@
   },
   "scripts": {
     "install": "cmake-js compile"
-  }
+  },
+  "types": "./node-fprintd.d.ts",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbwong05/node-fprintd.git"
+  },
+  "keywords": [
+    "node",
+    "fprintd",
+    "linux",
+    "fingerprint"
+  ],
+  "author": "Joshua Wong",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/jbwong05/node-fprintd/issues"
+  },
+  "homepage": "https://github.com/jbwong05/node-fprintd#readme"
 }
